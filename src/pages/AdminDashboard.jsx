@@ -52,11 +52,18 @@ const AdminDashboard = () => {
       return;
     }
 
-    const { error } = await supabase.from('profiles').insert([{ cpf: cleanCPF, name: newName || 'Usuário', role: 'user' }]);
+    const { error, data: newUserData } = await supabase.from('profiles').insert([{ cpf: cleanCPF, name: newName || 'Usuário', role: 'user' }]).select().single();
     
     if (error) {
       setUserError('Erro ao adicionar. O CPF já está cadastrado?');
     } else {
+      if (user && newUserData) {
+        await supabase.from('extinguisher_logs').insert([{
+          user_id: user.id,
+          action: 'USER_INSERT',
+          details: { name: newUserData.name, cpf: newUserData.cpf, role: newUserData.role }
+        }]);
+      }
       setNewCpf('');
       setNewName('');
       fetchUsers();
@@ -69,7 +76,16 @@ const AdminDashboard = () => {
       return;
     }
     if (window.confirm('Excluir este usuário?')) {
+      const deletedUser = users.find(u => u.id === id);
       await supabase.from('profiles').delete().eq('id', id);
+      
+      if (user && deletedUser) {
+        await supabase.from('extinguisher_logs').insert([{
+          user_id: user.id,
+          action: 'USER_DELETE',
+          details: { name: deletedUser.name, cpf: deletedUser.cpf, role: deletedUser.role }
+        }]);
+      }
       fetchUsers();
     }
   };
@@ -100,6 +116,17 @@ const AdminDashboard = () => {
     if (error) {
       setEditError('Erro ao atualizar. Verifique os dados.');
     } else {
+      if (user) {
+        await supabase.from('extinguisher_logs').insert([{
+          user_id: user.id,
+          action: 'USER_UPDATE',
+          details: { 
+            name: editName, cpf: cleanCPF, role: editRole, 
+            old_name: editingUser.name, old_cpf: editingUser.cpf, old_role: editingUser.role 
+          }
+        }]);
+      }
+
       if (user && editingUser.id === user.id) {
         updateUser({ cpf: cleanCPF, name: editName, role: editRole });
       }
@@ -211,6 +238,9 @@ const AdminDashboard = () => {
                 <option value="INSERT">Inclusão de Extintor</option>
                 <option value="UPDATE">Alteração de Extintor</option>
                 <option value="DELETE">Exclusão de Extintor</option>
+                <option value="USER_INSERT">Inclusão de Usuário</option>
+                <option value="USER_UPDATE">Alteração de Usuário</option>
+                <option value="USER_DELETE">Exclusão de Usuário</option>
               </select>
             </div>
             <div style={{ display: 'grid', gap: '12px' }}>
@@ -223,13 +253,17 @@ const AdminDashboard = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ 
                       fontWeight: 'bold', 
-                      color: log.action === 'INSERT' ? 'var(--success-color)' : 
-                             log.action === 'DELETE' ? 'var(--danger-color)' : 
+                      color: log.action === 'INSERT' || log.action === 'USER_INSERT' ? 'var(--success-color)' : 
+                             log.action === 'DELETE' || log.action === 'USER_DELETE' ? 'var(--danger-color)' : 
                              log.action === 'LOGIN' ? 'var(--primary-color)' : 'var(--warning-color)' 
                     }}>
-                      {log.action === 'INSERT' ? 'INCLUSÃO' : 
-                       log.action === 'DELETE' ? 'EXCLUSÃO' : 
-                       log.action === 'LOGIN' ? 'ENTRADA NO SISTEMA' : 'ALTERAÇÃO'}
+                      {log.action === 'INSERT' ? 'INCLUSÃO DE EXTINTOR' : 
+                       log.action === 'DELETE' ? 'EXCLUSÃO DE EXTINTOR' : 
+                       log.action === 'UPDATE' ? 'ALTERAÇÃO DE EXTINTOR' : 
+                       log.action === 'USER_INSERT' ? 'INCLUSÃO DE USUÁRIO' :
+                       log.action === 'USER_DELETE' ? 'EXCLUSÃO DE USUÁRIO' :
+                       log.action === 'USER_UPDATE' ? 'ALTERAÇÃO DE USUÁRIO' :
+                       log.action === 'LOGIN' ? 'ENTRADA NO SISTEMA' : log.action}
                     </span>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       {new Date(log.created_at).toLocaleString('pt-BR')}
@@ -246,6 +280,15 @@ const AdminDashboard = () => {
                           <span>{log.details.message}</span>
                         ) : log.action === 'DELETE' ? (
                           <span>Veículo: {log.details.plate} | Prefixo: {log.details.prefix} | Nº Série: {log.details.serial}</span>
+                        ) : log.action === 'USER_DELETE' || log.action === 'USER_INSERT' ? (
+                          <span>Nome: {log.details.name} | CPF: {formatCPF(log.details.cpf || '')} | Função: {log.details.role === 'admin' ? 'Admin' : 'Padrão'}</span>
+                        ) : log.action === 'USER_UPDATE' ? (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                            <div><strong>Nome Antigo:</strong> {log.details.old_name}</div>
+                            <div><strong>Nome Novo:</strong> {log.details.name}</div>
+                            <div><strong>Função Antiga:</strong> {log.details.old_role === 'admin' ? 'Admin' : 'Padrão'}</div>
+                            <div><strong>Função Nova:</strong> {log.details.role === 'admin' ? 'Admin' : 'Padrão'}</div>
+                          </div>
                         ) : (
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
                             {log.details.vehicle_plate && <div><strong>Placa:</strong> {log.details.vehicle_plate}</div>}
