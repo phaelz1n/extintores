@@ -10,6 +10,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [logs, setLogs] = useState([]);
   const [activeTab, setActiveTab] = useState('users'); // 'users' or 'logs'
+  const [logFilter, setLogFilter] = useState('ALL');
 
   // New user state
   const [newCpf, setNewCpf] = useState('');
@@ -107,6 +108,8 @@ const AdminDashboard = () => {
     }
   };
 
+  const filteredLogs = logs.filter(log => logFilter === 'ALL' || log.action === logFilter);
+
   return (
     <div style={{ paddingBottom: '40px' }}>
       <Navbar />
@@ -196,15 +199,26 @@ const AdminDashboard = () => {
           </div>
         ) : (
           <div>
-            <div className="header">
+            <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
               <h2>Histórico de Alterações em Extintores</h2>
+              <select 
+                value={logFilter} 
+                onChange={(e) => setLogFilter(e.target.value)}
+                style={{ padding: '8px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'inherit' }}
+              >
+                <option value="ALL">Todos os Registros</option>
+                <option value="LOGIN">Entrada no Sistema</option>
+                <option value="INSERT">Inclusão de Extintor</option>
+                <option value="UPDATE">Alteração de Extintor</option>
+                <option value="DELETE">Exclusão de Extintor</option>
+              </select>
             </div>
             <div style={{ display: 'grid', gap: '12px' }}>
-              {logs.length === 0 ? (
+              {filteredLogs.length === 0 ? (
                 <div className="card" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
-                  Nenhum log registrado ainda.
+                  Nenhum log encontrado para este filtro.
                 </div>
-              ) : logs.map(log => (
+              ) : filteredLogs.map(log => (
                 <div key={log.id} className="list-item" style={{ flexDirection: 'column' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ 
