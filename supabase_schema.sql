@@ -45,6 +45,14 @@ CREATE POLICY "Apenas admin pode inserir profiles"
     ON public.profiles FOR INSERT
     WITH CHECK (true); -- Na prática, verificaríamos a role do usuário autenticado, mas simplificaremos para o login via CPF.
 
+CREATE POLICY "Qualquer um pode atualizar profiles"
+    ON public.profiles FOR UPDATE
+    USING (true);
+
+CREATE POLICY "Qualquer um pode deletar profiles"
+    ON public.profiles FOR DELETE
+    USING (true);
+
 -- Políticas para Extintores
 CREATE POLICY "Qualquer um pode ler extintores"
     ON public.extinguishers FOR SELECT
