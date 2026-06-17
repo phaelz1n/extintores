@@ -209,9 +209,13 @@ const AdminDashboard = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                     <span style={{ 
                       fontWeight: 'bold', 
-                      color: log.action === 'INSERT' ? 'var(--success-color)' : log.action === 'DELETE' ? 'var(--danger-color)' : 'var(--warning-color)' 
+                      color: log.action === 'INSERT' ? 'var(--success-color)' : 
+                             log.action === 'DELETE' ? 'var(--danger-color)' : 
+                             log.action === 'LOGIN' ? 'var(--primary-color)' : 'var(--warning-color)' 
                     }}>
-                      {log.action === 'INSERT' ? 'INCLUSÃO' : log.action === 'DELETE' ? 'EXCLUSÃO' : 'ALTERAÇÃO'}
+                      {log.action === 'INSERT' ? 'INCLUSÃO' : 
+                       log.action === 'DELETE' ? 'EXCLUSÃO' : 
+                       log.action === 'LOGIN' ? 'ENTRADA NO SISTEMA' : 'ALTERAÇÃO'}
                     </span>
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       {new Date(log.created_at).toLocaleString('pt-BR')}

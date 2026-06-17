@@ -32,6 +32,13 @@ export const AuthProvider = ({ children }) => {
         throw new Error('CPF não encontrado ou sem permissão de acesso.');
       }
 
+      // Registrar o login do usuário no histórico
+      await supabase.from('extinguisher_logs').insert([{
+        user_id: data.id,
+        action: 'LOGIN',
+        details: { message: 'Acesso realizado com sucesso' }
+      }]);
+
       setUser(data);
       localStorage.setItem('extintores_user', JSON.stringify(data));
       return { success: true };
