@@ -3,8 +3,10 @@ import Navbar from '../components/Navbar';
 import { supabase } from '../services/supabase';
 import { Plus, Trash2, Users, Edit, Activity, CheckCircle, XCircle } from 'lucide-react';
 import { formatCPF, formatDate } from '../utils/formatters';
+import { useAuth } from '../contexts/AuthContext';
 
 const AdminDashboard = () => {
+  const { user, updateUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [logs, setLogs] = useState([]);
   const [activeTab, setActiveTab] = useState('users'); // 'users' or 'logs'
@@ -97,6 +99,9 @@ const AdminDashboard = () => {
     if (error) {
       setEditError('Erro ao atualizar. Verifique os dados.');
     } else {
+      if (user && editingUser.id === user.id) {
+        updateUser({ cpf: cleanCPF, name: editName, role: editRole });
+      }
       setEditingUser(null);
       fetchUsers();
     }
