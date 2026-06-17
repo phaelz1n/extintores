@@ -6,6 +6,7 @@ import ExtinguisherForm from '../components/ExtinguisherForm';
 import { exportToExcel } from '../utils/excel';
 import { formatDate, formatPlate } from '../utils/formatters';
 import { addDays, isBefore, parseISO } from 'date-fns';
+import { useAuth } from '../contexts/AuthContext';
 
 const Dashboard = () => {
   const [extinguishers, setExtinguishers] = useState([]);
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const [expiringAlerts, setExpiringAlerts] = useState([]);
   const [showExtForm, setShowExtForm] = useState(false);
   const [editingExt, setEditingExt] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchExtinguishers();
@@ -48,9 +50,19 @@ const Dashboard = () => {
     setExpiringAlerts(expiring);
   };
 
-  const handleDeleteExtinguisher = async (id) => {
+  const handleDeleteExtinguisher = async (ext) => {
     if (window.confirm('Tem certeza que deseja excluir este registro?')) {
-      await supabase.from('extinguishers').delete().eq('id', id);
+      await supabase.from('extinguishers').delete().eq('id', ext.id);
+      
+      if (user) {
+        await supabase.from('extinguisher_logs').insert([{
+          extinguisher_id: ext.id,
+          user_id: user.id,
+          action: 'DELETE',
+          details: { plate: ext.vehicle_plate, prefix: ext.prefix, serial: ext.serial_number }
+        }]);
+      }
+
       fetchExtinguishers();
     }
   };
@@ -165,7 +177,7 @@ const Dashboard = () => {
                   <button onClick={() => { setEditingExt(ext); setShowExtForm(true); }} className="btn-secondary" style={{ flex: 1, padding: '8px' }}>
                     <Edit size={16} /> Editar
                   </button>
-                  <button onClick={() => handleDeleteExtinguisher(ext.id)} className="btn-secondary" style={{ flex: 1, padding: '8px', color: 'var(--danger-color)' }}>
+                  <button onClick={() => handleDeleteExtinguisher(ext)} className="btn-secondary" style={{ flex: 1, padding: '8px', color: 'var(--danger-color)' }}>
                     <Trash2 size={16} /> Excluir
                   </button>
                 </div>
@@ -177,6 +189,7 @@ const Dashboard = () => {
         {showExtForm && (
           <ExtinguisherForm 
             extinguisher={editingExt} 
+            user={user}
             onSave={() => { setShowExtForm(false); fetchExtinguishers(); }} 
             onCancel={() => setShowExtForm(false)} 
           />

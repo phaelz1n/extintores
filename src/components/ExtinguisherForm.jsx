@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../services/supabase';
 import { formatPlate } from '../utils/formatters';
 
-const ExtinguisherForm = ({ extinguisher, onSave, onCancel }) => {
+const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
   const [formData, setFormData] = useState(
     extinguisher || {
       vehicle_plate: '',
@@ -49,13 +49,33 @@ const ExtinguisherForm = ({ extinguisher, onSave, onCancel }) => {
           .eq('id', extinguisher.id);
         
         if (updateError) throw updateError;
+
+        if (user) {
+          await supabase.from('extinguisher_logs').insert([{
+            extinguisher_id: extinguisher.id,
+            user_id: user.id,
+            action: 'UPDATE',
+            details: dataToSave
+          }]);
+        }
       } else {
         // Insert
-        const { error: insertError } = await supabase
+        const { data: insertedData, error: insertError } = await supabase
           .from('extinguishers')
-          .insert([dataToSave]);
+          .insert([dataToSave])
+          .select()
+          .single();
           
         if (insertError) throw insertError;
+
+        if (user && insertedData) {
+          await supabase.from('extinguisher_logs').insert([{
+            extinguisher_id: insertedData.id,
+            user_id: user.id,
+            action: 'INSERT',
+            details: dataToSave
+          }]);
+        }
       }
       
       onSave();

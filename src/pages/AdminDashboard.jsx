@@ -1,21 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { supabase } from '../services/supabase';
-import { Plus, Trash2, Users } from 'lucide-react';
-import { formatCPF } from '../utils/formatters';
+import { Plus, Trash2, Users, Edit, Activity, CheckCircle, XCircle } from 'lucide-react';
+import { formatCPF, formatDate } from '../utils/formatters';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [activeTab, setActiveTab] = useState('users'); // 'users' or 'logs'
+
+  // New user state
   const [newCpf, setNewCpf] = useState('');
+  const [newName, setNewName] = useState('');
   const [userError, setUserError] = useState('');
+
+  // Edit user state
+  const [editingUser, setEditingUser] = useState(null);
+  const [editCpf, setEditCpf] = useState('');
+  const [editName, setEditName] = useState('');
+  const [editRole, setEditRole] = useState('');
+  const [editError, setEditError] = useState('');
 
   useEffect(() => {
     fetchUsers();
+    fetchLogs();
   }, []);
 
   const fetchUsers = async () => {
     const { data } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
     if (data) setUsers(data);
+  };
+
+  const fetchLogs = async () => {
+    const { data } = await supabase
+      .from('extinguisher_logs')
+      .select('*, profiles(name, cpf)')
+      .order('created_at', { ascending: false });
+    if (data) setLogs(data);
   };
 
   const handleAddUser = async (e) => {
@@ -28,23 +49,55 @@ const AdminDashboard = () => {
       return;
     }
 
-    const { error } = await supabase.from('profiles').insert([{ cpf: cleanCPF, role: 'user' }]);
+    const { error } = await supabase.from('profiles').insert([{ cpf: cleanCPF, name: newName || 'Usuário', role: 'user' }]);
     
     if (error) {
       setUserError('Erro ao adicionar. O CPF já está cadastrado?');
     } else {
       setNewCpf('');
+      setNewName('');
       fetchUsers();
     }
   };
 
   const handleDeleteUser = async (id, role) => {
     if (role === 'admin') {
-      alert('Não é possível excluir o administrador padrão.');
+      alert('Não é recomendado excluir administradores por aqui, mude o perfil deles primeiro.');
       return;
     }
     if (window.confirm('Excluir este usuário?')) {
       await supabase.from('profiles').delete().eq('id', id);
+      fetchUsers();
+    }
+  };
+
+  const startEditUser = (user) => {
+    setEditingUser(user);
+    setEditCpf(user.cpf);
+    setEditName(user.name);
+    setEditRole(user.role);
+    setEditError('');
+  };
+
+  const handleEditUser = async (e) => {
+    e.preventDefault();
+    setEditError('');
+    const cleanCPF = editCpf.replace(/\D/g, '');
+    
+    if (cleanCPF.length !== 11) {
+      setEditError('CPF inválido.');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ cpf: cleanCPF, name: editName, role: editRole })
+      .eq('id', editingUser.id);
+      
+    if (error) {
+      setEditError('Erro ao atualizar. Verifique os dados.');
+    } else {
+      setEditingUser(null);
       fetchUsers();
     }
   };
@@ -55,50 +108,182 @@ const AdminDashboard = () => {
       
       <main className="app-container" style={{ maxWidth: '800px', marginTop: '20px' }}>
         <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--primary-color)', fontWeight: '600', fontSize: '1.2rem' }}>
+          <button 
+            onClick={() => setActiveTab('users')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              color: activeTab === 'users' ? 'var(--primary-color)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'users' ? '600' : '400',
+              fontSize: '1.2rem', background: 'none', border: 'none', cursor: 'pointer'
+            }}
+          >
             <Users size={24} />
             Gestão de Usuários
-          </div>
+          </button>
+          <button 
+            onClick={() => setActiveTab('logs')}
+            style={{ 
+              display: 'flex', alignItems: 'center', gap: '8px', 
+              color: activeTab === 'logs' ? 'var(--primary-color)' : 'var(--text-muted)',
+              fontWeight: activeTab === 'logs' ? '600' : '400',
+              fontSize: '1.2rem', background: 'none', border: 'none', cursor: 'pointer'
+            }}
+          >
+            <Activity size={24} />
+            Logs do Sistema
+          </button>
         </div>
 
-        <div>
-          <div className="card" style={{ marginBottom: '24px' }}>
-            <h3 style={{ marginBottom: '16px' }}>Adicionar Usuário (Acesso CPF)</h3>
-            {userError && <div className="alert alert-danger" style={{ padding: '8px', marginBottom: '16px' }}>{userError}</div>}
-            <form onSubmit={handleAddUser} style={{ display: 'flex', gap: '12px' }}>
-              <input 
-                type="text" 
-                value={newCpf} 
-                onChange={(e) => setNewCpf(formatCPF(e.target.value))} 
-                placeholder="000.000.000-00" 
-                maxLength={14}
-                required 
-              />
-              <button type="submit" className="btn-primary" style={{ width: 'auto', whiteSpace: 'nowrap' }}>
-                <Plus size={18} /> Adicionar
-              </button>
-            </form>
-          </div>
+        {activeTab === 'users' ? (
+          <div>
+            <div className="card" style={{ marginBottom: '24px' }}>
+              <h3 style={{ marginBottom: '16px' }}>Adicionar Usuário</h3>
+              {userError && <div className="alert alert-danger" style={{ padding: '8px', marginBottom: '16px' }}>{userError}</div>}
+              <form onSubmit={handleAddUser} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <input 
+                  type="text" 
+                  value={newName} 
+                  onChange={(e) => setNewName(e.target.value)} 
+                  placeholder="Nome do Usuário" 
+                  required 
+                  style={{ flex: 1, minWidth: '200px' }}
+                />
+                <input 
+                  type="text" 
+                  value={newCpf} 
+                  onChange={(e) => setNewCpf(formatCPF(e.target.value))} 
+                  placeholder="CPF: 000.000.000-00" 
+                  maxLength={14}
+                  required 
+                  style={{ flex: 1, minWidth: '150px' }}
+                />
+                <button type="submit" className="btn-primary" style={{ width: 'auto', whiteSpace: 'nowrap' }}>
+                  <Plus size={18} /> Adicionar
+                </button>
+              </form>
+            </div>
 
-          <div className="header">
-            <h2>Usuários Cadastrados</h2>
-          </div>
-          <div style={{ display: 'grid', gap: '12px' }}>
-            {users.map(u => (
-              <div key={u.id} className="list-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontWeight: '600' }}>{formatCPF(u.cpf)}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Função: {u.role === 'admin' ? 'Administrador' : 'Usuário Padrão'}</div>
+            <div className="header">
+              <h2>Usuários Cadastrados</h2>
+            </div>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {users.map(u => (
+                <div key={u.id} className="list-item" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: '600' }}>{u.name} <span style={{ fontWeight: 'normal', color: 'var(--text-muted)', fontSize: '0.9rem' }}>({formatCPF(u.cpf)})</span></div>
+                    <div style={{ fontSize: '0.85rem', color: u.role === 'admin' ? 'var(--primary-color)' : 'var(--text-muted)', fontWeight: u.role === 'admin' ? 'bold' : 'normal' }}>
+                      Função: {u.role === 'admin' ? 'Administrador' : 'Usuário Padrão'}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => startEditUser(u)} className="btn-secondary" style={{ padding: '8px' }}>
+                      <Edit size={16} />
+                    </button>
+                    {u.role !== 'admin' && (
+                      <button onClick={() => handleDeleteUser(u.id, u.role)} className="btn-secondary" style={{ padding: '8px', color: 'var(--danger-color)' }}>
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-                {u.role !== 'admin' && (
-                  <button onClick={() => handleDeleteUser(u.id, u.role)} className="btn-secondary" style={{ padding: '8px', color: 'var(--danger-color)' }}>
-                    <Trash2 size={16} />
-                  </button>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div>
+            <div className="header">
+              <h2>Histórico de Alterações em Extintores</h2>
+            </div>
+            <div style={{ display: 'grid', gap: '12px' }}>
+              {logs.length === 0 ? (
+                <div className="card" style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>
+                  Nenhum log registrado ainda.
+                </div>
+              ) : logs.map(log => (
+                <div key={log.id} className="list-item" style={{ flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ 
+                      fontWeight: 'bold', 
+                      color: log.action === 'INSERT' ? 'var(--success-color)' : log.action === 'DELETE' ? 'var(--danger-color)' : 'var(--warning-color)' 
+                    }}>
+                      {log.action === 'INSERT' ? 'INCLUSÃO' : log.action === 'DELETE' ? 'EXCLUSÃO' : 'ALTERAÇÃO'}
+                    </span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      {new Date(log.created_at).toLocaleString('pt-BR')}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.95rem' }}>
+                    <strong>Usuário:</strong> {log.profiles ? log.profiles.name : 'Desconhecido'} <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>({log.profiles ? formatCPF(log.profiles.cpf) : ''})</span>
+                  </div>
+                  <div style={{ fontSize: '0.9rem', marginTop: '4px', background: 'var(--surface-color)', padding: '8px', borderRadius: '4px' }}>
+                    <strong>Detalhes:</strong>
+                    {log.details ? (
+                      <pre style={{ margin: 0, marginTop: '4px', whiteSpace: 'pre-wrap', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                        {JSON.stringify(log.details, null, 2)}
+                      </pre>
+                    ) : 'Sem detalhes'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Edição de Usuário */}
+        {editingUser && (
+          <div className="modal-overlay">
+            <div className="modal-content" style={{ maxWidth: '400px' }}>
+              <div className="modal-header">
+                <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Editar Usuário</h2>
+                <button onClick={() => setEditingUser(null)} style={{ fontSize: '1.5rem', color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button>
+              </div>
+
+              {editError && <div className="alert alert-danger" style={{ marginBottom: '16px' }}>{editError}</div>}
+
+              <form onSubmit={handleEditUser}>
+                <div className="form-group">
+                  <label>Nome do Usuário</label>
+                  <input 
+                    type="text" 
+                    value={editName} 
+                    onChange={(e) => setEditName(e.target.value)} 
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label>CPF</label>
+                  <input 
+                    type="text" 
+                    value={editCpf} 
+                    onChange={(e) => setEditCpf(formatCPF(e.target.value))} 
+                    maxLength={14}
+                    required 
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Função</label>
+                  <select 
+                    value={editRole} 
+                    onChange={(e) => setEditRole(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)' }}
+                  >
+                    <option value="user">Usuário Padrão</option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+                  <button type="button" onClick={() => setEditingUser(null)} className="btn-secondary" style={{ flex: 1 }}>
+                    Cancelar
+                  </button>
+                  <button type="submit" className="btn-primary" style={{ flex: 1 }}>
+                    Salvar
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

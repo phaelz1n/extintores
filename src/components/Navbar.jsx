@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LogOut, Shield } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import { formatCPF } from '../utils/formatters';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -22,10 +23,10 @@ const Navbar = () => {
       </div>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontWeight: '500', fontSize: '0.9rem' }}>CPF: {user?.cpf}</div>
+        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ fontWeight: '600', fontSize: '0.95rem', color: 'var(--text-color)' }}>{user?.name || 'Usuário'}</div>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            {user?.role === 'admin' ? 'Administrador' : 'Usuário'}
+            CPF: {user?.cpf ? formatCPF(user.cpf) : ''} • {user?.role === 'admin' ? 'Admin' : 'Padrão'}
           </div>
         </div>
         

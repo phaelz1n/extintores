@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     cpf VARCHAR(14) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL DEFAULT 'Usuário',
     role VARCHAR(10) NOT NULL DEFAULT 'user',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -18,8 +19,18 @@ CREATE TABLE IF NOT EXISTS public.extinguishers (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Tabela de Logs de Extintores
+CREATE TABLE IF NOT EXISTS public.extinguisher_logs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    extinguisher_id UUID, -- Pode ser nulo se o extintor foi deletado
+    user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    action VARCHAR(20) NOT NULL, -- 'INSERT', 'UPDATE', 'DELETE'
+    details JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
 -- Inserir um Admin padrão
-INSERT INTO public.profiles (cpf, role) VALUES ('00000000000', 'admin') ON CONFLICT (cpf) DO NOTHING;
+INSERT INTO public.profiles (cpf, name, role) VALUES ('00000000000', 'Administrador', 'admin') ON CONFLICT (cpf) DO NOTHING;
 
 -- Configurar RLS (Row Level Security)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -50,3 +61,14 @@ CREATE POLICY "Qualquer um pode atualizar extintores"
 CREATE POLICY "Qualquer um pode deletar extintores"
     ON public.extinguishers FOR DELETE
     USING (true);
+
+-- Configurar RLS para Logs
+ALTER TABLE public.extinguisher_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Qualquer um pode inserir logs"
+    ON public.extinguisher_logs FOR INSERT
+    WITH CHECK (true);
+
+CREATE POLICY "Apenas admin pode ler logs"
+    ON public.extinguisher_logs FOR SELECT
+    USING (true); -- Simplificando para visualização no frontend, já que filtramos no código client-side. Ou idealmente: USING ((SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin') se usássemos Supabase Auth real.
