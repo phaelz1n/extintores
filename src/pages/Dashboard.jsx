@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { supabase } from '../services/supabase';
-import { AlertTriangle, Download, Search, CheckCircle, XCircle } from 'lucide-react';
+import { AlertTriangle, Download, Search, CheckCircle, XCircle, Plus, Edit, Trash2 } from 'lucide-react';
+import ExtinguisherForm from '../components/ExtinguisherForm';
 import { exportToExcel } from '../utils/excel';
 import { formatDate } from '../utils/formatters';
 import { addDays, isBefore, parseISO } from 'date-fns';
@@ -11,6 +12,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [expiringAlerts, setExpiringAlerts] = useState([]);
+  const [showExtForm, setShowExtForm] = useState(false);
+  const [editingExt, setEditingExt] = useState(null);
 
   useEffect(() => {
     fetchExtinguishers();
@@ -45,6 +48,13 @@ const Dashboard = () => {
     setExpiringAlerts(expiring);
   };
 
+  const handleDeleteExtinguisher = async (id) => {
+    if (window.confirm('Tem certeza que deseja excluir este registro?')) {
+      await supabase.from('extinguishers').delete().eq('id', id);
+      fetchExtinguishers();
+    }
+  };
+
   const filteredExtinguishers = extinguishers.filter(ext => 
     ext.vehicle_plate.toLowerCase().includes(searchTerm.toLowerCase()) ||
     ext.prefix.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -76,14 +86,23 @@ const Dashboard = () => {
         <div className="header" style={{ flexWrap: 'wrap', gap: '16px' }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Extintores Cadastrados</h2>
           
-          <button 
-            onClick={() => exportToExcel(extinguishers)}
-            className="btn-secondary"
-            style={{ fontSize: '0.9rem' }}
-          >
-            <Download size={18} />
-            Baixar Relatório Excel
-          </button>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button 
+              className="btn-primary" 
+              style={{ width: 'auto', fontSize: '0.9rem' }} 
+              onClick={() => { setEditingExt(null); setShowExtForm(true); }}
+            >
+              <Plus size={18} /> Novo Extintor
+            </button>
+            <button 
+              onClick={() => exportToExcel(extinguishers)}
+              className="btn-secondary"
+              style={{ fontSize: '0.9rem' }}
+            >
+              <Download size={18} />
+              Baixar Relatório
+            </button>
+          </div>
         </div>
 
         <div style={{ position: 'relative', marginBottom: '24px' }}>
@@ -107,21 +126,22 @@ const Dashboard = () => {
           </div>
         ) : (
           <div>
-            {filteredExtinguishers.map(ext => (
-              <div key={ext.id} className="list-item">
+              <div key={ext.id} className="list-item" style={{ position: 'relative' }}>
                 <div className="list-item-header">
                   <div className="list-item-title">
                     Veículo: {ext.vehicle_plate}
                   </div>
-                  {ext.is_full ? (
-                    <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <CheckCircle size={12} /> Cheio
-                    </span>
-                  ) : (
-                    <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <XCircle size={12} /> Usado/Vazio
-                    </span>
-                  )}
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {ext.is_full ? (
+                      <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <CheckCircle size={12} /> Cheio
+                      </span>
+                    ) : (
+                      <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <XCircle size={12} /> Usado
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="list-item-details">
                   <div className="detail-row">
@@ -140,9 +160,25 @@ const Dashboard = () => {
                     </span>
                   </div>
                 </div>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
+                  <button onClick={() => { setEditingExt(ext); setShowExtForm(true); }} className="btn-secondary" style={{ flex: 1, padding: '8px' }}>
+                    <Edit size={16} /> Editar
+                  </button>
+                  <button onClick={() => handleDeleteExtinguisher(ext.id)} className="btn-secondary" style={{ flex: 1, padding: '8px', color: 'var(--danger-color)' }}>
+                    <Trash2 size={16} /> Excluir
+                  </button>
+                </div>
               </div>
             ))}
           </div>
+        )}
+
+        {showExtForm && (
+          <ExtinguisherForm 
+            extinguisher={editingExt} 
+            onSave={() => { setShowExtForm(false); fetchExtinguishers(); }} 
+            onCancel={() => setShowExtForm(false)} 
+          />
         )}
       </main>
     </div>
