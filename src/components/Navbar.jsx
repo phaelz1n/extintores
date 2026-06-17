@@ -1,12 +1,13 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, Shield } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { LogOut, Shield, Home } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { formatCPF } from '../utils/formatters';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -30,9 +31,15 @@ const Navbar = () => {
           </div>
         </div>
         
-        {user?.role === 'admin' && (
+        {user?.role === 'admin' && location.pathname !== '/admin' && (
           <Link to="/admin" className="btn-secondary" style={{ padding: '8px', border: 'none' }} title="Painel Admin">
             <Shield size={20} />
+          </Link>
+        )}
+        
+        {user?.role === 'admin' && location.pathname === '/admin' && (
+          <Link to="/" className="btn-secondary" style={{ padding: '8px', border: 'none' }} title="Voltar aos Extintores">
+            <Home size={20} />
           </Link>
         )}
         

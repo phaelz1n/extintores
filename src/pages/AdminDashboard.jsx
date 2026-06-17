@@ -227,10 +227,24 @@ const AdminDashboard = () => {
                   <div style={{ fontSize: '0.9rem', marginTop: '4px', background: 'var(--surface-color)', padding: '8px', borderRadius: '4px' }}>
                     <strong>Detalhes:</strong>
                     {log.details ? (
-                      <pre style={{ margin: 0, marginTop: '4px', whiteSpace: 'pre-wrap', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        {JSON.stringify(log.details, null, 2)}
-                      </pre>
-                    ) : 'Sem detalhes'}
+                      <div style={{ marginTop: '4px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {log.action === 'LOGIN' && log.details.message ? (
+                          <span>{log.details.message}</span>
+                        ) : log.action === 'DELETE' ? (
+                          <span>Veículo: {log.details.plate} | Prefixo: {log.details.prefix} | Nº Série: {log.details.serial}</span>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
+                            {log.details.vehicle_plate && <div><strong>Placa:</strong> {log.details.vehicle_plate}</div>}
+                            {log.details.prefix && <div><strong>Prefixo:</strong> {log.details.prefix}</div>}
+                            {log.details.serial_number && <div><strong>Nº Série:</strong> {log.details.serial_number}</div>}
+                            {log.details.expiration_date && <div><strong>Vencimento:</strong> {new Date(log.details.expiration_date).toLocaleDateString('pt-BR')}</div>}
+                            {log.details.is_full !== undefined && <div><strong>Status:</strong> {log.details.is_full ? 'Cheio' : 'Usado'}</div>}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}> Sem detalhes</span>
+                    )}
                   </div>
                 </div>
               ))}
