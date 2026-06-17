@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from '../services/supabase';
+import { formatPlate } from '../utils/formatters';
 
 const ExtinguisherForm = ({ extinguisher, onSave, onCancel }) => {
   const [formData, setFormData] = useState(
@@ -16,9 +17,15 @@ const ExtinguisherForm = ({ extinguisher, onSave, onCancel }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    
+    let finalValue = type === 'checkbox' ? checked : value;
+    if (name === 'vehicle_plate') {
+      finalValue = formatPlate(value);
+    }
+
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: finalValue
     }));
   };
 

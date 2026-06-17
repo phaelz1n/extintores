@@ -15,3 +15,12 @@ export const formatDate = (dateString) => {
   const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
   return utcDate.toLocaleDateString('pt-BR');
 };
+
+export const formatPlate = (value) => {
+  if (!value) return '';
+  const cleaned = value.replace(/-/g, '').toUpperCase();
+  if (cleaned.length > 3) {
+    return `${cleaned.slice(0, 3)}-${cleaned.slice(3, 7)}`;
+  }
+  return cleaned;
+};

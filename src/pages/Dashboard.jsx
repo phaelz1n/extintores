@@ -4,7 +4,7 @@ import { supabase } from '../services/supabase';
 import { AlertTriangle, Download, Search, CheckCircle, XCircle, Plus, Edit, Trash2 } from 'lucide-react';
 import ExtinguisherForm from '../components/ExtinguisherForm';
 import { exportToExcel } from '../utils/excel';
-import { formatDate } from '../utils/formatters';
+import { formatDate, formatPlate } from '../utils/formatters';
 import { addDays, isBefore, parseISO } from 'date-fns';
 
 const Dashboard = () => {
@@ -76,7 +76,7 @@ const Dashboard = () => {
             <ul style={{ paddingLeft: '24px', margin: 0, fontSize: '0.9rem' }}>
               {expiringAlerts.map(ext => (
                 <li key={ext.id} style={{ marginBottom: '4px' }}>
-                  Veículo: <strong>{ext.vehicle_plate}</strong> (Prefixo: {ext.prefix}) - Vence em: {formatDate(ext.expiration_date)}
+                  Veículo: <strong>{formatPlate(ext.vehicle_plate)}</strong> (Prefixo: {ext.prefix}) - Vence em: {formatDate(ext.expiration_date)}
                 </li>
               ))}
             </ul>
@@ -130,7 +130,7 @@ const Dashboard = () => {
               <div key={ext.id} className="list-item" style={{ position: 'relative' }}>
                 <div className="list-item-header">
                   <div className="list-item-title">
-                    Veículo: {ext.vehicle_plate}
+                    Veículo: {formatPlate(ext.vehicle_plate)}
                   </div>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                     {ext.is_full ? (
