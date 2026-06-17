@@ -126,6 +126,7 @@ const Dashboard = () => {
           </div>
         ) : (
           <div>
+            {filteredExtinguishers.map(ext => (
               <div key={ext.id} className="list-item" style={{ position: 'relative' }}>
                 <div className="list-item-header">
                   <div className="list-item-title">
