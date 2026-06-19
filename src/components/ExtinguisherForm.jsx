@@ -109,6 +109,8 @@ const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
         finalData.serial_number = `SEM EXTINTOR - ${vehiclePlateUpper}`;
         finalData.expiration_date = '2099-12-31';
         finalData.is_full = false;
+      } else if (!finalData.serial_number || finalData.serial_number.trim() === '') {
+        finalData.serial_number = `ILEGÍVEL - ${vehiclePlateUpper}`;
       }
 
       const dataToSave = {
@@ -245,7 +247,7 @@ const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
                   name="serial_number" 
                   value={formData.serial_number} 
                   onChange={handleChange} 
-                  required={formData.has_extinguisher}
+                  placeholder="Deixe em branco se estiver ilegível"
                 />
               </div>
 
