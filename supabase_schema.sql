@@ -24,9 +24,10 @@ CREATE TABLE IF NOT EXISTS public.extinguishers (
 -- ==========================================
 -- ATUALIZAÇÃO (RODAR NO SUPABASE SQL EDITOR)
 -- ==========================================
--- Se você já tem a tabela extinguishers criada, rode os comandos abaixo para adicionar as novas colunas:
+-- Se você já tem a tabela extinguishers criada, rode os comandos abaixo para adicionar as novas colunas e restrições:
 -- ALTER TABLE public.extinguishers ADD COLUMN has_metroplan_seal BOOLEAN DEFAULT false;
 -- ALTER TABLE public.extinguishers ADD COLUMN has_extinguisher BOOLEAN DEFAULT true;
+-- ALTER TABLE public.extinguishers ADD CONSTRAINT unique_vehicle_plate UNIQUE (vehicle_plate);
 -- ==========================================
 
 -- Tabela de Logs de Extintores

@@ -84,16 +84,36 @@ const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
 
     try {
       let finalData = { ...formData };
+      const vehiclePlateUpper = finalData.vehicle_plate.toUpperCase();
+
+      // Verificar duplicidade de placa
+      let query = supabase
+        .from('extinguishers')
+        .select('id')
+        .eq('vehicle_plate', vehiclePlateUpper);
+        
+      if (extinguisher && extinguisher.id) {
+        query = query.neq('id', extinguisher.id);
+      }
+
+      const { data: existingPlates, error: checkError } = await query;
+      if (checkError) throw checkError;
+      
+      if (existingPlates && existingPlates.length > 0) {
+        setError('Já existe uma inspeção cadastrada para esta placa. Edite o cadastro existente.');
+        setLoading(false);
+        return;
+      }
       
       if (!finalData.has_extinguisher) {
-        finalData.serial_number = `SEM EXTINTOR - ${finalData.vehicle_plate}`;
+        finalData.serial_number = `SEM EXTINTOR - ${vehiclePlateUpper}`;
         finalData.expiration_date = '2099-12-31';
         finalData.is_full = false;
       }
 
       const dataToSave = {
         ...finalData,
-        vehicle_plate: finalData.vehicle_plate.toUpperCase(),
+        vehicle_plate: vehiclePlateUpper,
         updated_at: new Date().toISOString()
       };
 
@@ -137,7 +157,7 @@ const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
       onSave();
     } catch (err) {
       console.error(err);
-      setError('Erro ao salvar os dados. Verifique se o número de série já existe.');
+      setError('Erro ao salvar. Verifique se o número de série ou placa já existem.');
     } finally {
       setLoading(false);
     }

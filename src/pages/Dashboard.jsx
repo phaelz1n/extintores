@@ -107,7 +107,7 @@ const Dashboard = () => {
               style={{ width: 'auto', fontSize: '0.9rem' }} 
               onClick={() => { setEditingExt(null); setShowExtForm(true); }}
             >
-              <Plus size={18} /> Novo Extintor
+              <Plus size={18} /> Nova Inspeção
             </button>
             <button 
               onClick={() => exportToExcel(extinguishers)}
