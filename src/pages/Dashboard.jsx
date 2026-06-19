@@ -7,6 +7,7 @@ import { exportToExcel } from '../utils/excel';
 import { formatDate, formatPlate } from '../utils/formatters';
 import { addDays, isBefore, parseISO } from 'date-fns';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [extinguishers, setExtinguishers] = useState([]);
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const [showExtForm, setShowExtForm] = useState(false);
   const [editingExt, setEditingExt] = useState(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchExtinguishers();
@@ -81,18 +83,18 @@ const Dashboard = () => {
       <main className="app-container" style={{ maxWidth: '800px', marginTop: '20px' }}>
         
         {expiringAlerts.length > 0 && (
-          <div className="alert alert-danger" style={{ flexDirection: 'column' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold', marginBottom: '8px' }}>
-              <AlertTriangle size={20} />
-              Atenção! Extintores vencidos ou próximos ao vencimento:
+          <div 
+            className="alert alert-danger" 
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'opacity 0.2s' }}
+            onClick={() => navigate('/expiring')}
+            onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+            onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+          >
+            <AlertTriangle size={32} />
+            <div>
+              <div style={{ fontSize: '1.1rem' }}>Atenção! {expiringAlerts.length} veículo(s) com extintor vencido ou próximo ao vencimento.</div>
+              <div style={{ fontSize: '0.9rem', marginTop: '4px', textDecoration: 'underline' }}>Clique aqui para ver a lista completa</div>
             </div>
-            <ul style={{ paddingLeft: '24px', margin: 0, fontSize: '0.9rem' }}>
-              {expiringAlerts.map(ext => (
-                <li key={ext.id} style={{ marginBottom: '4px' }}>
-                  Veículo: <strong>{formatPlate(ext.vehicle_plate)}</strong> (Prefixo: {ext.prefix}) - Vence em: {formatDate(ext.expiration_date)}
-                </li>
-              ))}
-            </ul>
           </div>
         )}
 
