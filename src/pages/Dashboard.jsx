@@ -42,6 +42,7 @@ const Dashboard = () => {
     const thirtyDaysFromNow = addDays(today, 30);
     
     const expiring = data.filter(ext => {
+      if (ext.serial_number.startsWith('PENDENTE-') || ext.has_extinguisher === false) return false;
       const expDate = parseISO(ext.expiration_date);
       // is expiring in less than 30 days or already expired
       return isBefore(expDate, thirtyDaysFromNow);
@@ -144,15 +145,32 @@ const Dashboard = () => {
                   <div className="list-item-title">
                     Veículo: {formatPlate(ext.vehicle_plate)}
                   </div>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {ext.is_full ? (
-                      <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <CheckCircle size={12} /> Cheio
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {ext.serial_number.startsWith('PENDENTE-') ? (
+                      <span className="badge" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#fd7e14', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                        <AlertTriangle size={12} /> Pendente de Inspeção
                       </span>
                     ) : (
-                      <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <XCircle size={12} /> Usado
-                      </span>
+                      <>
+                        {ext.has_metroplan_seal && (
+                          <span className="badge badge-primary" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#0056b3', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                            <CheckCircle size={12} /> Selo Metroplan
+                          </span>
+                        )}
+                        {ext.has_extinguisher === false ? (
+                          <span className="badge" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#6c757d', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                            <XCircle size={12} /> Sem Extintor
+                          </span>
+                        ) : ext.is_full ? (
+                          <span className="badge badge-success" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <CheckCircle size={12} /> Cheio
+                          </span>
+                        ) : (
+                          <span className="badge badge-warning" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <XCircle size={12} /> Usado
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -160,18 +178,30 @@ const Dashboard = () => {
                   <div className="detail-row">
                     <strong>Prefixo:</strong> {ext.prefix}
                   </div>
-                  <div className="detail-row">
-                    <strong>Nº Série:</strong> {ext.serial_number}
-                  </div>
-                  <div className="detail-row">
-                    <strong>Vencimento:</strong> 
-                    <span style={{ 
-                      color: expiringAlerts.some(a => a.id === ext.id) ? 'var(--danger-color)' : 'inherit',
-                      fontWeight: expiringAlerts.some(a => a.id === ext.id) ? 'bold' : 'normal'
-                    }}>
-                      {formatDate(ext.expiration_date)}
-                    </span>
-                  </div>
+                  {ext.serial_number.startsWith('PENDENTE-') ? (
+                    <div className="detail-row" style={{ color: '#fd7e14', fontWeight: '500' }}>
+                      <em>Aguardando verificação inicial do veículo.</em>
+                    </div>
+                  ) : ext.has_extinguisher === false ? (
+                    <div className="detail-row" style={{ color: 'var(--text-muted)' }}>
+                      <em>Veículo registrado como sem extintor.</em>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="detail-row">
+                        <strong>Nº Série:</strong> {ext.serial_number}
+                      </div>
+                      <div className="detail-row">
+                        <strong>Vencimento:</strong> 
+                        <span style={{ 
+                          color: expiringAlerts.some(a => a.id === ext.id) ? 'var(--danger-color)' : 'inherit',
+                          fontWeight: expiringAlerts.some(a => a.id === ext.id) ? 'bold' : 'normal'
+                        }}>
+                          {formatDate(ext.expiration_date)}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: '8px', marginTop: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '12px' }}>
                   <button onClick={() => { setEditingExt(ext); setShowExtForm(true); }} className="btn-secondary" style={{ flex: 1, padding: '8px' }}>

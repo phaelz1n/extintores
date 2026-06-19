@@ -15,9 +15,19 @@ CREATE TABLE IF NOT EXISTS public.extinguishers (
     serial_number VARCHAR(50) UNIQUE NOT NULL,
     expiration_date DATE NOT NULL,
     is_full BOOLEAN DEFAULT true,
+    has_metroplan_seal BOOLEAN DEFAULT false,
+    has_extinguisher BOOLEAN DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- ==========================================
+-- ATUALIZAÇÃO (RODAR NO SUPABASE SQL EDITOR)
+-- ==========================================
+-- Se você já tem a tabela extinguishers criada, rode os comandos abaixo para adicionar as novas colunas:
+-- ALTER TABLE public.extinguishers ADD COLUMN has_metroplan_seal BOOLEAN DEFAULT false;
+-- ALTER TABLE public.extinguishers ADD COLUMN has_extinguisher BOOLEAN DEFAULT true;
+-- ==========================================
 
 -- Tabela de Logs de Extintores
 CREATE TABLE IF NOT EXISTS public.extinguisher_logs (
