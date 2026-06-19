@@ -1,6 +1,6 @@
 import * as XLSX from 'xlsx';
 
-export const exportToExcel = (data, filename = 'relatorio_extintores.xlsx') => {
+export const exportToExcel = (data, filename = 'relatorio_inspecoes.xlsx') => {
   // Format data for excel
   const formattedData = data.map(item => {
     const isPending = item.serial_number && item.serial_number.startsWith('PENDENTE-');
@@ -19,7 +19,7 @@ export const exportToExcel = (data, filename = 'relatorio_extintores.xlsx') => {
 
   const worksheet = XLSX.utils.json_to_sheet(formattedData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Extintores');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Inspeções');
   
   // Create file and trigger download
   XLSX.writeFile(workbook, filename);

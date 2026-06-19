@@ -227,7 +227,7 @@ const AdminDashboard = () => {
         ) : (
           <div>
             <div className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-              <h2>Histórico de Alterações em Extintores</h2>
+              <h2>Histórico de Inspeções</h2>
               <select 
                 value={logFilter} 
                 onChange={(e) => setLogFilter(e.target.value)}

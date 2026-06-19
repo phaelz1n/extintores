@@ -19,7 +19,7 @@ const Navbar = () => {
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
         <img src="/logo.png" alt="Logo" style={{ height: '32px', width: 'auto', objectFit: 'contain' }} />
         <span style={{ fontWeight: '600', fontSize: '1.1rem', display: 'none' }} className="mobile-hide">
-          Controle de Extintores
+          Controle de Inspeções
         </span>
       </div>
       
@@ -38,7 +38,7 @@ const Navbar = () => {
         )}
         
         {user?.role === 'admin' && location.pathname === '/admin' && (
-          <Link to="/" className="btn-secondary" style={{ padding: '8px', border: 'none' }} title="Voltar aos Extintores">
+          <Link to="/" className="btn-secondary" style={{ padding: '8px', border: 'none' }} title="Voltar às Inspeções">
             <Home size={20} />
           </Link>
         )}

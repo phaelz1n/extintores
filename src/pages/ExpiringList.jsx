@@ -54,7 +54,7 @@ const ExpiringList = () => {
 
         <div className="header" style={{ marginBottom: '24px' }}>
           <h2 style={{ fontSize: '1.5rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <AlertTriangle color="var(--danger-color)" /> Veículos com Extintores Vencidos ou Próximos
+            <AlertTriangle color="var(--danger-color)" /> Inspeções Vencidas ou Próximas
           </h2>
         </div>
 

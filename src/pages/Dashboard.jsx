@@ -99,7 +99,7 @@ const Dashboard = () => {
         )}
 
         <div className="header" style={{ flexWrap: 'wrap', gap: '16px' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Extintores Cadastrados</h2>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Inspeções Cadastradas</h2>
           
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <button 
@@ -133,11 +133,11 @@ const Dashboard = () => {
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-            Carregando extintores...
+            Carregando inspeções...
           </div>
         ) : filteredExtinguishers.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-            Nenhum extintor encontrado.
+            Nenhuma inspeção encontrada.
           </div>
         ) : (
           <div>

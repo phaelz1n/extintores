@@ -28,7 +28,7 @@ const Login = () => {
       <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <img src="/logo.png" alt="Logo" style={{ width: '150px', height: 'auto', marginBottom: '16px', objectFit: 'contain' }} />
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '700' }}>Controle de Extintores</h1>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: '700' }}>Controle de Inspeções</h1>
           <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>Acesso ao sistema interno</p>
         </div>
 
