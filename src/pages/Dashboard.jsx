@@ -154,9 +154,14 @@ const Dashboard = () => {
                       </span>
                     ) : (
                       <>
-                        {ext.has_metroplan_seal && (
+                        {ext.has_metroplan_seal === true && (
                           <span className="badge badge-primary" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#0056b3', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
                             <CheckCircle size={12} /> Selo Metroplan
+                          </span>
+                        )}
+                        {ext.has_metroplan_seal === false && (
+                          <span className="badge" style={{ display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: '#6c757d', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                            <XCircle size={12} /> Sem Selo Metroplan
                           </span>
                         )}
                         {ext.has_extinguisher === false ? (

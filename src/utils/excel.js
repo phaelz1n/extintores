@@ -12,7 +12,7 @@ export const exportToExcel = (data, filename = 'relatorio_inspecoes.xlsx') => {
       'Número de Série': isPending ? 'Pendente' : (item.has_extinguisher === false ? 'N/A' : item.serial_number),
       'Data de Vencimento': isPending ? 'Pendente' : (item.has_extinguisher === false ? 'N/A' : new Date(item.expiration_date).toLocaleDateString('pt-BR')),
       'Status': isPending ? 'Pendente' : (item.has_extinguisher === false ? 'N/A' : (item.is_full ? 'Cheio' : 'Vazio/Usado')),
-      'Selo Metroplan': isPending ? 'Pendente' : (item.has_metroplan_seal ? 'Sim' : 'Não'),
+      'Selo Metroplan': isPending ? 'Pendente' : (item.has_metroplan_seal === true ? 'Sim' : item.has_metroplan_seal === false ? 'Não' : 'Não Verificado'),
       'Cadastrado em': new Date(item.created_at).toLocaleDateString('pt-BR'),
     };
   });

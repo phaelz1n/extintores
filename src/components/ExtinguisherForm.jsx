@@ -12,7 +12,7 @@ const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
         serial_number: isPending ? '' : extinguisher.serial_number,
         expiration_date: isPending ? '' : extinguisher.expiration_date,
         has_extinguisher: isPending ? true : (extinguisher.has_extinguisher ?? true),
-        has_metroplan_seal: isPending ? false : extinguisher.has_metroplan_seal,
+        has_metroplan_seal: isPending ? null : extinguisher.has_metroplan_seal,
         is_full: isPending ? true : extinguisher.is_full
       };
     }
@@ -22,7 +22,7 @@ const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
       serial_number: '',
       expiration_date: '',
       is_full: true,
-      has_metroplan_seal: false,
+      has_metroplan_seal: null,
       has_extinguisher: true
     };
   });
@@ -279,16 +279,24 @@ const ExtinguisherForm = ({ extinguisher, user, onSave, onCancel }) => {
               </div>
             )}
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <input 
-                type="checkbox" 
+            <div className="form-group" style={{ marginTop: '8px' }}>
+              <label>Selo da Metroplan</label>
+              <select 
                 name="has_metroplan_seal" 
-                checked={formData.has_metroplan_seal} 
-                onChange={handleChange} 
-                id="has_metroplan_seal_checkbox"
-                style={{ width: 'auto' }}
-              />
-              <label htmlFor="has_metroplan_seal_checkbox" style={{ margin: 0, cursor: 'pointer' }}>Veículo possui selo da Metroplan</label>
+                value={formData.has_metroplan_seal === true ? 'true' : formData.has_metroplan_seal === false ? 'false' : ''} 
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setFormData(prev => ({ 
+                    ...prev, 
+                    has_metroplan_seal: val === 'true' ? true : val === 'false' ? false : null 
+                  }));
+                }}
+                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)', color: 'inherit' }}
+              >
+                <option value="">Não verificado (Não exibe aviso)</option>
+                <option value="true">Veículo possui selo</option>
+                <option value="false">Veículo NÃO possui selo</option>
+              </select>
             </div>
           </div>
 
