@@ -14,6 +14,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [expiringAlerts, setExpiringAlerts] = useState([]);
+  const [missingSealAlerts, setMissingSealAlerts] = useState([]);
   const [showExtForm, setShowExtForm] = useState(false);
   const [editingExt, setEditingExt] = useState(null);
   const { user } = useAuth();
@@ -51,6 +52,12 @@ const Dashboard = () => {
     });
 
     setExpiringAlerts(expiring);
+
+    const missingSeal = data.filter(ext => {
+      if (ext.serial_number.startsWith('PENDENTE-') || ext.has_extinguisher === false) return false;
+      return ext.has_metroplan_seal === false;
+    });
+    setMissingSealAlerts(missingSeal);
   };
 
   const handleDeleteExtinguisher = async (ext) => {
@@ -85,7 +92,7 @@ const Dashboard = () => {
         {expiringAlerts.length > 0 && (
           <div 
             className="alert alert-danger" 
-            style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'opacity 0.2s' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 'bold', cursor: 'pointer', transition: 'opacity 0.2s', marginBottom: '16px' }}
             onClick={() => navigate('/expiring')}
             onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
             onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
@@ -94,6 +101,18 @@ const Dashboard = () => {
             <div>
               <div style={{ fontSize: '1.1rem' }}>Atenção! {expiringAlerts.length} veículo(s) com extintor vencido ou próximo ao vencimento.</div>
               <div style={{ fontSize: '0.9rem', marginTop: '4px', textDecoration: 'underline' }}>Clique aqui para ver a lista completa</div>
+            </div>
+          </div>
+        )}
+
+        {missingSealAlerts.length > 0 && (
+          <div 
+            className="alert" 
+            style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 'bold', backgroundColor: '#fff3cd', color: '#856404', border: '1px solid #ffeeba', borderRadius: '4px', padding: '15px', marginBottom: '16px' }}
+          >
+            <AlertTriangle size={32} />
+            <div>
+              <div style={{ fontSize: '1.1rem' }}>Atenção! {missingSealAlerts.length} veículo(s) sem selo Metroplan.</div>
             </div>
           </div>
         )}
